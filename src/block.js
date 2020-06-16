@@ -12,9 +12,20 @@
 const SHA256 = require('crypto-js/sha256');
 const hex2ascii = require('hex2ascii');
 
+class StarTransaction {
+    constructor(address, star) {
+        this.address = address,
+        this.star = star
+    }
+}
+
 class Block {
 
     // Constructor - argument data will be the object containing the transaction data
+    /*
+    parameter data: StarTransaction
+    }
+    */
 	constructor(data){
 		this.hash = null;                                           // Hash of the block
 		this.height = 0;                                            // Block Height (consecutive number of each block)
@@ -39,13 +50,16 @@ class Block {
         let self = this;
         return new Promise((resolve, reject) => {
             // Save in auxiliary variable the current block hash
-                                            
+            let auxiliaryHash = this.hash;                               
             // Recalculate the hash of the Block
             // Comparing if the hashes changed
             // Returning the Block is not valid
-            
+            let newHash = SHA256(JOSN.stringify(this));
             // Returning the Block is valid
-
+            if (this.hash === newHasH) {
+                resolve(true);
+            } else
+                reject(false);
         });
     }
 
@@ -62,11 +76,19 @@ class Block {
         // Getting the encoded data saved in the Block
         // Decoding the data to retrieve the JSON representation of the object
         // Parse the data to an object to be retrieve.
-
         // Resolve with the data if the object isn't the Genesis block
+        return new Promise((resolve, reject) => {
+            const data = JSON.parse(hex2ascii(this.body));
+            if (this.height > 0) {
+                resolve(data);
+            } else {
+                reject(new Error("Block does not contain data or is Genesis"));
+            }
+        })
 
     }
 
 }
 
-module.exports.Block = Block;                    // Exposing the Block class as a module
+module.exports.Block = Block;
+module.exports.StarTransaction = StarTransaction;                  // Exposing the Block class as a module
