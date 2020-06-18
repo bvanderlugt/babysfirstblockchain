@@ -74,13 +74,13 @@ class Blockchain {
                     const previousHash = previousBlock.hash;
                     block.previousBlockHash = previousHash;
                 }
+                self.height += 1;
                 // set block data
                 block.time = new Date().getTime().toString().slice(0,-3); //seconds
                 block.height = self.height;
                 // add block hash
-                block.hash = SHA256(JSON.stringify(block));
+                block.hash = SHA256(JSON.stringify(block)).toString();
                 self.chain.push(block);
-                self.height += 1;
                 resolve(block);
             } catch (error) {
                 reject(error);
@@ -131,10 +131,7 @@ class Blockchain {
             const starTransaction = new BlockClass.StarTransaction(address, star);
             const block = new BlockClass.Block(starTransaction);
             // add the block
-            this._addBlock(block)
-            .then(() => {
-                resolve(block);
-            });
+            resolve(this._addBlock(block))
         });
     }
 
