@@ -131,7 +131,7 @@ class Blockchain {
             const starTransaction = new BlockClass.StarTransaction(address, star);
             const block = new BlockClass.Block(starTransaction);
             // add the block
-            resolve(this._addBlock(block))
+            resolve(self._addBlock(block));
         });
     }
 
@@ -183,11 +183,19 @@ class Blockchain {
      */
     getStarsByWalletAddress(address) {
         let self = this;
-        return new Promise((resolve, reject) => {
-            var result = self.chain.filter(block => {
-                var data = block.getBData();
-                return data.address === address;
+        return new Promise(async (resolve, reject) => {
+            var promises = await self.chain.map(block => {
+                return block.getBData()
+                .catch(error => console.log(error.message));
             });
+            var result = await Promise.all(promises)
+                .then(starTransactions => {
+                    return starTransactions.filter(starTransaction => {
+                        return  starTransaction && 
+                                starTransaction.address && 
+                                starTransaction.address === address;
+                    }); 
+                });
             resolve(result);
         });
     }

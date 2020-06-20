@@ -14,8 +14,8 @@ const hex2ascii = require('hex2ascii');
 
 class StarTransaction {
     constructor(address, star) {
-        this.address = address,
-        this.star = star
+        this.address = address;
+        this.star = star;
     }
 }
 
@@ -50,13 +50,13 @@ class Block {
         let self = this;
         return new Promise((resolve, reject) => {
             // Save in auxiliary variable the current block hash
-            let auxiliaryHash = this.hash;                               
+            let auxiliaryHash = self.hash;                               
             // Recalculate the hash of the Block
             // Comparing if the hashes changed
             // Returning the Block is not valid
             let newHash = SHA256(JOSN.stringify(this));
             // Returning the Block is valid
-            if (this.hash === newHasH) {
+            if (auxiliaryHash === newHash) {
                 resolve(true);
             } else
                 reject(false);
