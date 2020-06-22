@@ -67,21 +67,21 @@ class Blockchain {
         let self = this;
         return new Promise(async (resolve, reject) => {
             try {
-                const currentHeight = self.height; // set time
-                if (currentHeight >= 0) { //not genesis case
+                self.height += 1;
+                const currentHeight = self.height;
+                if (currentHeight > 0) {
                     const previousHeight = currentHeight - 1;
                     const previousBlock = self.chain[previousHeight];
                     const previousHash = previousBlock.hash;
                     block.previousBlockHash = previousHash;
                 }
-                self.height += 1;
                 // set block data
                 block.time = new Date().getTime().toString().slice(0,-3); //seconds
-                block.height = self.height;
+                block.height = currentHeight;
                 // add block hash
                 block.hash = SHA256(JSON.stringify(block)).toString();
                 self.chain.push(block);
-                resolve(block);
+                resolve(block); 
             } catch (error) {
                 reject(error);
             }
@@ -144,13 +144,6 @@ class Blockchain {
     getBlockByHash(hash) {
         let self = this;
         return new Promise((resolve, reject) => {
-            // for (var i = 0; i < self.chain.length; i++ ){
-            //     var block = self.chain[i];
-            //     if (block.hash === hash) {
-            //         // found block
-            //         resolve(block);
-            //     }
-            // }
             var result = self.chain.filter((block) => {
                 return block.hash === hash;
             });
@@ -210,12 +203,20 @@ class Blockchain {
         let self = this;
         return new Promise(async (resolve, reject) => {
             // create a list of invalid blocks 
-            let validErrorLog = self.chain.map((block, index)=> {
-                if (!block.validate()) {
-                    return `Error: Block ${block.height} is invalid.`;
-                }
+            let validErrorLogPromises = self.chain.map(block => {
+                block.validate()
+                    .then(isValid => {
+                        if (!isValid) {
+                            return `Error: Block ${block.height} is invalid.`;
+                        }
+                    });
             });
 
+            const validErrorLog = await Promise.all(validErrorLogPromises)
+                .then(results => {
+                    return results.filter(result => !!result);
+                });
+            // check the chain history by block hash
             let hashMatchErrorLog = self.chain.reduce((prev, curr) => {
                 if (curr.previousHash) {
                     if (curr.previousHash !== prev.hash) {
