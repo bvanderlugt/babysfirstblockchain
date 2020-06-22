@@ -68,7 +68,7 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             try {
                 const currentHeight = self.height; // set time
-                if (currentHeight > 0) { //not genesis case
+                if (currentHeight >= 0) { //not genesis case
                     const previousHeight = currentHeight - 1;
                     const previousBlock = self.chain[previousHeight];
                     const previousHash = previousBlock.hash;
@@ -209,10 +209,22 @@ class Blockchain {
     validateChain() {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            var results = self.chain.map(block => {
-                return block.validate();
+            // create a list of invalid blocks 
+            let validErrorLog = self.chain.map((block, index)=> {
+                if (!block.validate()) {
+                    return `Error: Block ${block.height} is invalid.`;
+                }
             });
-            return resolve(results);
+
+            let hashMatchErrorLog = self.chain.reduce((prev, curr) => {
+                if (curr.previousHash) {
+                    if (curr.previousHash !== prev.hash) {
+                        return `Error: Block ${curr.height} previous hash ${curr.previousHash} does
+                        not match previous block ${prev.height} with hash ${prev.hash}`;
+                    }
+                }
+            });
+            return resolve(validErrorLog.concat(hashMatchErrorLog));
         });
     }
 
