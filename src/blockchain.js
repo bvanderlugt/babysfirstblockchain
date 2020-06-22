@@ -204,11 +204,12 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             // create a list of invalid blocks 
             let validErrorLogPromises = self.chain.map(block => {
-                block.validate()
+                return block.validate()
                     .then(isValid => {
                         if (!isValid) {
                             return `Error: Block ${block.height} is invalid.`;
-                        }
+                        } 
+                        return null;
                     });
             });
 
@@ -217,14 +218,15 @@ class Blockchain {
                     return results.filter(result => !!result);
                 });
             // check the chain history by block hash
-            let hashMatchErrorLog = self.chain.reduce((prev, curr) => {
+            let hashMatchErrorLog = self.chain.map((curr, currIndex) => {
                 if (curr.previousHash) {
-                    if (curr.previousHash !== prev.hash) {
+                    if (curr.previousHash !== self.chain[currIndex - 1].hash) {
                         return `Error: Block ${curr.height} previous hash ${curr.previousHash} does
-                        not match previous block ${prev.height} with hash ${prev.hash}`;
+                        not match previous block ${curr.height - 1}`;
                     }
                 }
-            });
+            })
+            .filter(result => !!result);
             return resolve(validErrorLog.concat(hashMatchErrorLog));
         });
     }
