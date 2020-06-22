@@ -209,10 +209,9 @@ class Blockchain {
                         if (!isValid) {
                             return `Error: Block ${block.height} is invalid.`;
                         } 
-                        return null;
                     });
             });
-
+            
             const validErrorLog = await Promise.all(validErrorLogPromises)
                 .then(results => {
                     return results.filter(result => !!result);
